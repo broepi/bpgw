@@ -2,18 +2,14 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "game.h"
-#include "display.h"
 
 using namespace std;
 
-Game::Game (Vector2D displayDim, char *wndName)
-	: running (false)
+Game::Game (Vector2D displayDim, char *wndName, bool resizeable)
+	: running (false), powerSaving (false), curStage (0)
 {
-	srand (time(0));
-	
 	if (SDL_Init (SDL_INIT_VIDEO) != 0) {
 		cerr << "SDL error: " << SDL_GetError () << endl;
 		exit (-1);
@@ -24,55 +20,116 @@ Game::Game (Vector2D displayDim, char *wndName)
 		exit (-1);
 	}
 	
-	display = new Display (displayDim, wndName);
+	if (FT_Init_FreeType (&freeType)) {
+		cerr << "FreeType error" << endl;
+		exit (-1);
+	}
 	
-	registerHandler (QUITEVENT, this);
+	eventMan = new EventManager ();
+	display = new Display (this, displayDim, wndName, resizeable);
+	spriteMan = new SpriteManager ();
+	
+	eventMan->registerHandler (SDL_QUIT, this);
+	
+	srand (time(0));
+	perfFreq = SDL_GetPerformanceFrequency ();
+	setFramerate (60);
 }
 
 Game::~Game ()
 {
-	unregisterHandler (QUITEVENT, this);
+	eventMan->unregisterHandler (SDL_QUIT, this);
 	
+	delete spriteMan;
 	delete display;
+	delete eventMan;
 	
+	FT_Done_FreeType (freeType);
 	IMG_Quit ();
 	SDL_Quit ();
 }
 
 void Game::run ()
 {
-	SDL_Event event;
-	
-	running = true;
-	while (running) {
-		while (SDL_PollEvent (&event) == 1) {
-			switch (event.type) {
-			case SDL_QUIT:
-				for (BpNode<EventHandler*> *i = handlerMap [QUITEVENT].first; i != 0; i = i->next)
-				{
-					i->val->onQuit ();
-				}
-				break;
-			}
-		}
-		display->clear ();
-		display->present ();
+	if (powerSaving) {
+	}
+	else {
+		runPerformance ();
 	}
 }
 
-void Game::registerHandler (Event event, EventHandler *handler)
+void Game::runPerformance ()
 {
-	handlerMap [event].add (handler);
+	Uint64 lastFrameTick, lastUpdateTick, now;
+	double timeDelta;
+	
+	lastFrameTick = lastUpdateTick = now = SDL_GetPerformanceCounter ();
+	running = true;
+	
+	while (running) {
+	
+		// Calculate Time Difference
+		now = SDL_GetPerformanceCounter ();
+		timeDelta = (double)(now - lastUpdateTick) / (double)perfFreq;
+		lastUpdateTick = now;
+	
+		// Event Handling
+		eventMan->update ();
+		
+		// Game Action
+		if (curStage) {
+			// Update Stage
+			curStage->update (timeDelta);
+			// Update Sprites
+			spriteMan->update (timeDelta);
+		}
+		
+		// Frame Drawing
+		now = SDL_GetPerformanceCounter ();
+		if (now - lastFrameTick > framelenTarget * perfFreq) {
+			framelenMeasured = (double)(now - lastFrameTick) / (double)perfFreq;
+			framerateMeasured = 1 / framelenMeasured;
+			lastFrameTick = now;
+			display->clear ();
+			display->activateScreenDrawMode ();
+			if (curStage) {
+				curStage->drawBg ();
+				spriteMan->draw ();
+				curStage->drawFg ();
+			}
+			display->present ();
+		}
+	}
 }
 
-void Game::unregisterHandler (Event event, EventHandler *handler)
+void Game::setFramerate (double f)
 {
-	handlerMap [event].rem (handler);
+	framerateTarget = f;
+	framelenTarget = 1 / f;
 }
 
-void Game::onQuit ()
+void Game::enterStage (Stage *stage)
+{
+	curStage = stage;
+	curStage->enter ();
+}
+
+void Game::leaveStage ()
+{
+	if (curStage) {
+		curStage->leave ();
+		curStage = 0;
+	}
+}
+
+void Game::changeStage (Stage *stage)
+{
+	leaveStage ();
+	enterStage (stage);
+}
+
+void Game::onQuit (SDL_QuitEvent)
 {
 	running = false;
 }
-
 

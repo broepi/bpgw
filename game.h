@@ -2,30 +2,44 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "eventhandler.h"
+#include <SDL2/SDL.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include "eventmanager.h"
+#include "display.h"
+#include "stage.h"
+#include "spritemanager.h"
 #include "vector2d.h"
-#include "bpset.h"
 
-class Display;
+using namespace std;
 
 class Game : public EventHandler
 {
 public:
-	enum Event {
-		QUITEVENT,
-		EVENTCOUNT
-	};
-	
 	bool running;
+	bool powerSaving;
+	Uint64 perfFreq;
+	double framerateTarget; // frames per second
+	double framelenTarget; // seconds per frame
+	double framerateMeasured; // frames per second
+	double framelenMeasured; // seconds per frame
+	FT_Library freeType;
+	EventManager *eventMan;
 	Display *display;
-	BpSet<EventHandler*> handlerMap [EVENTCOUNT];
+	SpriteManager *spriteMan;
+	Stage *curStage;
 	
-	Game (Vector2D displayDim = Vector2D (800, 600), char *wndName = "My Game");
+	Game (Vector2D displayDim = Vector2D (800, 600), char *wndName = "My Game",
+		bool resizeable = false);
 	~Game ();
 	void run ();
-	void registerHandler (Event event, EventHandler *handler);
-	void unregisterHandler (Event event, EventHandler *handler);
-	void onQuit ();
+	void runPerformance ();
+	void setFramerate (double f);
+	void enterStage (Stage *stage);
+	void leaveStage ();
+	void changeStage (Stage *stage);
+	
+	void onQuit (SDL_QuitEvent event);
 };
 
 #endif

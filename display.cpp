@@ -1,11 +1,12 @@
 
 #include <iostream>
 #include "display.h"
+#include "game.h"
 
 using namespace std;
 
-Display::Display (Vector2D dim, char *wndName, bool resizeable)
-	: dim (dim)
+Display::Display (Game *game, Vector2D dim, char *wndName, bool resizeable)
+	: game (game), dim (dim)
 {
 	SDL_GL_SetAttribute (SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute (SDL_GL_GREEN_SIZE, 8);
@@ -25,17 +26,39 @@ Display::Display (Vector2D dim, char *wndName, bool resizeable)
 		cerr << "SDL error: " << SDL_GetError () << endl;
 		exit (-1);
 	}
+	
+	setBgColor (0, 0, 0);
+	
+	game->eventMan->registerHandler (SDL_WINDOWEVENT, this);
 }
 
 Display::~Display ()
 {
+	game->eventMan->unregisterHandler (SDL_WINDOWEVENT, this);
+	
 	SDL_GL_DeleteContext (glContext);
 	SDL_DestroyWindow (window);
 }
 
+void Display::setBgColor (double r, double g, double b)
+{
+	glClearColor (r, g, b, 0);
+}
+
+void Display::activateScreenDrawMode ()
+{
+	glMatrixMode (GL_PROJECTION);
+	glLoadIdentity ();
+	glOrtho (0, dim.x, dim.y, 0, -1, 1);
+
+	glMatrixMode (GL_MODELVIEW);
+	glLoadIdentity ();
+
+	glDisable (GL_DEPTH_TEST);
+}
+
 void Display::clear ()
 {
-	glClearColor (0, 0, 0, 0);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -43,3 +66,22 @@ void Display::present ()
 {
 	SDL_GL_SwapWindow (window);
 }
+
+void drawPoint (Vector2D pos, Color color)
+{
+	glColor4b (color.r, color.g, color.b, color.a);
+	glBegin (GL_POINTS);
+	glVertex3d (pos.x, pos.y, 0);
+	glEnd ();
+}
+
+void Display::onWindow (SDL_WindowEvent event)
+{
+	switch (event.event) {
+	case SDL_WINDOWEVENT_RESIZED:
+		dim = Vector2D (event.data1, event.data2);
+		glViewport (0, 0, dim.x, dim.y);
+		break;
+	}
+}
+
