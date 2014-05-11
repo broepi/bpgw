@@ -32,7 +32,7 @@ public:
 
 	Font (Game *game, char *fileName, int ptSize);
 	~Font ();
-	Texture *createText (Display *display, char *text, Color color);
+	Texture *createText (char *text, Color color);
 };
 
 #endif

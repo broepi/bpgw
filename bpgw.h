@@ -10,10 +10,9 @@
 #include "drawable.h"
 #include "drawmanager.h"
 #include "eventmanager.h"
-#include "rect.h"
-#include "spritemanager.h"
 #include "stage.h"
 #include "updateable.h"
 #include "updatemanager.h"
 #include "vector2d.h"
+#include "texturemanager.h"
 

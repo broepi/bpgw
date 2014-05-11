@@ -85,7 +85,7 @@ Font::~Font ()
 	}
 }
 
-Texture *Font::createText (Display *display, char *text, Color color)
+Texture *Font::createText (char *text, Color color)
 {
 	int textWidth = 0;
 	char *textPtr;
@@ -126,7 +126,7 @@ Texture *Font::createText (Display *display, char *text, Color color)
 		pen += bmp->advance;
 	}
 	
-	Texture *texture = new Texture (display, pixData, textWidth, maxHeight);
+	Texture *texture = new Texture (game->display, pixData, Vector2D (textWidth, maxHeight));
 	
 	delete pixData;
 	

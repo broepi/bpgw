@@ -16,6 +16,8 @@ public:
 	public:
 		virtual void onQuit (SDL_QuitEvent event) {}
 		virtual void onWindow (SDL_WindowEvent event) {}
+		virtual void onKeyDown (SDL_KeyboardEvent event) {}
+		virtual void onKeyUp (SDL_KeyboardEvent event) {}
 	};
 	
 	typedef set<Handler*> HandlerList;

@@ -25,7 +25,7 @@ public:
 	void activateScreenDrawMode ();
 	void clear ();
 	void present ();
-	void drawPoint (Vector2D pos, Color color);
+	void drawPoint (Vector2D pos, Color color, int size = 1);
 	void onWindow (SDL_WindowEvent event);
 };
 

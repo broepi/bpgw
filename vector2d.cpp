@@ -6,6 +6,11 @@ Vector2D::Vector2D (double x, double y)
 {
 }
 
+Vector2D::Vector2D (double xy)
+	: x (xy), y (xy)
+{
+}
+
 Vector2D::Vector2D (const Vector2D& other)
 	: x (other.x), y (other.y)
 {

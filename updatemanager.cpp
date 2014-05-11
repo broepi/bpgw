@@ -37,8 +37,9 @@ void UpdateManager::unregisterUpdateable (Updateable *updateable)
 void UpdateManager::update (double timeDelta)
 {
 	updateables.sort ();
-	for (UpdateListIter i = updateables.begin ();
-		i != updateables.end ();
+	UpdateList tmpCopy (updateables);
+	for (UpdateListIter i = tmpCopy.begin ();
+		i != tmpCopy.end ();
 		i ++)
 	{
 		(*i)->update (timeDelta);

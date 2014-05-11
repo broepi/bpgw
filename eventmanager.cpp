@@ -33,6 +33,12 @@ void EventManager::update ()
 			case SDL_WINDOWEVENT:
 				(*i)->onWindow (event.window);
 				break;
+			case SDL_KEYDOWN:
+				(*i)->onKeyDown (event.key);
+				break;
+			case SDL_KEYUP:
+				(*i)->onKeyUp (event.key);
+				break;
 			}
 		}
 	}

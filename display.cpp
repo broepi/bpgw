@@ -67,11 +67,22 @@ void Display::present ()
 	SDL_GL_SwapWindow (window);
 }
 
-void drawPoint (Vector2D pos, Color color)
+void Display::drawPoint (Vector2D pos, Color color, int size)
 {
-	glColor4b (color.r, color.g, color.b, color.a);
+	glDisable (GL_TEXTURE_2D);
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glPointSize (1);
+	glColor4ub (color.r, color.g, color.b, color.a);
+
 	glBegin (GL_POINTS);
-	glVertex3d (pos.x, pos.y, 0);
+	
+	for (int x=0; x<size; x++) {
+		for (int y=0; y<size; y++) {
+			glVertex3d (pos.x + x, pos.y + y, 0);
+		}
+	}
+		
 	glEnd ();
 }
 

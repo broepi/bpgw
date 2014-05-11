@@ -25,10 +25,9 @@ public:
 	double alpha;
 	Vector2D vel;
 	Vector2D acc;
-	double z;
 	
 	Sprite (Game *game, Texture *tex = 0, Camera2D *cam = 0);
-	Sprite (Game *game, char *texFileName = 0, Camera2D *cam = 0);
+	Sprite (Game *game, char *texFileName, Camera2D *cam = 0);
 	~Sprite ();
 	void update (double timeDelta);
 	void draw ();

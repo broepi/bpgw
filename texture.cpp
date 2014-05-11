@@ -26,11 +26,11 @@ Texture::Texture (Display *display, char *fileName, int cols, int rows)
 Texture::Texture (Display *display, unsigned char *data, Vector2D dim, int cols, int rows)
 	: dim (dim)
 {
-	setTiling (cols, rows);
-	
 	physDim = Vector2D (power2Expanded (dim.x), power2Expanded (dim.y));
 	relDim = Vector2D (dim.x / physDim.x, dim.y / physDim.y);
-	
+
+	setTiling (cols, rows);
+		
 	glGenTextures (1, &glTexName);
 	
 	if (glTexName == 0) {
@@ -134,11 +134,11 @@ void Texture::draw (Vector2D pos, Vector2D scale, Vector2D center, Vector2D alig
 	glBegin (GL_QUADS);
 	glTexCoord2d (0.0, 0.0);
 	glVertex3d (0.0, 0.0, 0.0);
-	glTexCoord2d (1.0, 0.0);
+	glTexCoord2d (relDim.x, 0.0);
 	glVertex3d (frameDim.x, 0.0, 0.0);
-	glTexCoord2d (1.0, 1.0);
+	glTexCoord2d (relDim.x, relDim.y);
 	glVertex3d (frameDim.x, frameDim.y, 0.0);
-	glTexCoord2d (0.0, 1.0);
+	glTexCoord2d (0.0, relDim.y);
 	glVertex3d (0.0, frameDim.y, 0.0);
 	glEnd ();
 	
