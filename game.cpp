@@ -27,7 +27,9 @@ Game::Game (Vector2D displayDim, char *wndName, bool resizeable)
 	
 	eventMan = new EventManager ();
 	display = new Display (this, displayDim, wndName, resizeable);
-	spriteMan = new SpriteManager ();
+	drawMan = new DrawManager ();
+	updateMan = new UpdateManager ();
+	texMan = new TextureManager (this, "res");
 	
 	eventMan->registerHandler (SDL_QUIT, this);
 	
@@ -40,7 +42,9 @@ Game::~Game ()
 {
 	eventMan->unregisterHandler (SDL_QUIT, this);
 	
-	delete spriteMan;
+	delete texMan;
+	delete updateMan;
+	delete drawMan;
 	delete display;
 	delete eventMan;
 	
@@ -76,13 +80,16 @@ void Game::runPerformance ()
 		// Event Handling
 		eventMan->update ();
 		
-		// Game Action
+		// Updating
+		updateMan->update (timeDelta);
+		/*
 		if (curStage) {
 			// Update Stage
 			curStage->update (timeDelta);
 			// Update Sprites
 			spriteMan->update (timeDelta);
 		}
+		*/
 		
 		// Frame Drawing
 		now = SDL_GetPerformanceCounter ();
@@ -92,11 +99,14 @@ void Game::runPerformance ()
 			lastFrameTick = now;
 			display->clear ();
 			display->activateScreenDrawMode ();
+			/*
 			if (curStage) {
 				curStage->drawBg ();
 				spriteMan->draw ();
 				curStage->drawFg ();
 			}
+			*/
+			drawMan->draw ();
 			display->present ();
 		}
 	}

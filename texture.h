@@ -19,9 +19,10 @@ public:
 	GLuint glTexName;
 	
 	Texture (Display *display, char *fileName, int cols = 1, int rows = 1);
-	Texture (unsigned char *data, Vector2D dim, int cols = 1, int rows = 1);
+	Texture (Display *display, unsigned char *data, Vector2D dim, int cols = 1, int rows = 1);
 	~Texture ();
 	void loadSurface (SDL_Surface *surf);
+	void setTiling (int cols, int rows);
 	void draw (
 		Vector2D pos = Vector2D (0, 0),
 		Vector2D scale = Vector2D (1, 1),

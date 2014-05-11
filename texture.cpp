@@ -7,7 +7,7 @@
 using namespace std;
 
 Texture::Texture (Display *display, char *fileName, int cols, int rows)
-	: display (display), cols (cols), rows (rows)
+	: display (display)
 {
 	SDL_Surface *surf = IMG_Load (fileName);
 	
@@ -18,14 +18,17 @@ Texture::Texture (Display *display, char *fileName, int cols, int rows)
 	
 	loadSurface (surf);
 	
+	setTiling (cols, rows);
+	
 	SDL_FreeSurface (surf);
 }
 
-Texture::Texture (unsigned char *data, Vector2D dim, int cols, int rows)
-	: dim (dim), cols (cols), rows (rows)
+Texture::Texture (Display *display, unsigned char *data, Vector2D dim, int cols, int rows)
+	: dim (dim)
 {
+	setTiling (cols, rows);
+	
 	physDim = Vector2D (power2Expanded (dim.x), power2Expanded (dim.y));
-	frameDim = Vector2D (dim.x / cols, dim.y / rows);
 	relDim = Vector2D (dim.x / physDim.x, dim.y / physDim.y);
 	
 	glGenTextures (1, &glTexName);
@@ -42,17 +45,22 @@ Texture::Texture (unsigned char *data, Vector2D dim, int cols, int rows)
 		data);
 }
 
-
 Texture::~Texture ()
 {
 	glDeleteTextures (1, &glTexName);
+}
+
+void Texture::setTiling (int cols, int rows)
+{
+	this->cols = cols;
+	this->rows = rows;
+	frameDim = Vector2D (dim.x / cols, dim.y / rows);
 }
 
 void Texture::loadSurface (SDL_Surface *surf)
 {
 	dim = Vector2D (surf->w, surf->h);
 	physDim = Vector2D (power2Expanded (surf->w), power2Expanded (surf->h));
-	frameDim = Vector2D (dim.x / cols, dim.y / rows);
 	relDim = Vector2D (dim.x / physDim.x, dim.y / physDim.y);
 	
 	SDL_Surface *tmpSurf = SDL_CreateRGBSurface (0, physDim.x, physDim.y, 32,

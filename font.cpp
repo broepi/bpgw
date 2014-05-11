@@ -2,6 +2,7 @@
 #include <iostream>
 #include "font.h"
 #include "utils.h"
+#include "game.h"
 
 using namespace std;
 
@@ -125,7 +126,7 @@ Texture *Font::createText (Display *display, char *text, Color color)
 		pen += bmp->advance;
 	}
 	
-	Texture *texture = new Texture (pixData, textWidth, maxHeight);
+	Texture *texture = new Texture (display, pixData, textWidth, maxHeight);
 	
 	delete pixData;
 	

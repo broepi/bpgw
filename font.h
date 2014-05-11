@@ -4,8 +4,10 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "game.h"
+#include "texture.h"
 #include "color.h"
+
+class Game;
 
 class Font
 {

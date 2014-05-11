@@ -2,13 +2,16 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <set>
 #include <SDL2/SDL.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "eventmanager.h"
+#include "drawmanager.h"
+#include "updatemanager.h"
+#include "texturemanager.h"
 #include "display.h"
 #include "stage.h"
-#include "spritemanager.h"
 #include "vector2d.h"
 
 using namespace std;
@@ -26,7 +29,9 @@ public:
 	FT_Library freeType;
 	EventManager *eventMan;
 	Display *display;
-	SpriteManager *spriteMan;
+	DrawManager *drawMan;
+	UpdateManager *updateMan;
+	TextureManager *texMan;
 	Stage *curStage;
 	
 	Game (Vector2D displayDim = Vector2D (800, 600), char *wndName = "My Game",
