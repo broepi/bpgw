@@ -8,7 +8,8 @@
 using namespace std;
 
 Game::Game (Vector2D displayDim, char *wndName, bool resizeable)
-	: running (false), powerSaving (false), curStage (0)
+	: running (false), synchronized (false), powerSaving (false), curStage (0),
+	framerateMeasured (0), framelenMeasured (0)
 {
 	if (SDL_Init (SDL_INIT_VIDEO) != 0) {
 		cerr << "SDL error: " << SDL_GetError () << endl;
@@ -35,7 +36,7 @@ Game::Game (Vector2D displayDim, char *wndName, bool resizeable)
 	
 	srand (time(0));
 	perfFreq = SDL_GetPerformanceFrequency ();
-	setFramerate (60);
+	setFramerate (50);
 }
 
 Game::~Game ()
@@ -55,7 +56,8 @@ Game::~Game ()
 
 void Game::run ()
 {
-	if (powerSaving) {
+	if (synchronized) {
+		runSynchronized ();
 	}
 	else {
 		runPerformance ();
@@ -64,10 +66,10 @@ void Game::run ()
 
 void Game::runPerformance ()
 {
-	Uint64 lastFrameTick, lastUpdateTick, now;
+	Uint64 lastFrameTick, nextFrameTick, lastUpdateTick, now;
 	double timeDelta;
 	
-	lastFrameTick = lastUpdateTick = now = SDL_GetPerformanceCounter ();
+	lastFrameTick = nextFrameTick = lastUpdateTick = now = SDL_GetPerformanceCounter ();
 	running = true;
 	
 	while (running) {
@@ -82,40 +84,66 @@ void Game::runPerformance ()
 		
 		// Updating
 		updateMan->update (timeDelta);
-		/*
-		if (curStage) {
-			// Update Stage
-			curStage->update (timeDelta);
-			// Update Sprites
-			spriteMan->update (timeDelta);
-		}
-		*/
 		
 		// Frame Drawing
 		now = SDL_GetPerformanceCounter ();
-		if (now - lastFrameTick > framelenTarget * perfFreq) {
+		if (now >= nextFrameTick) {
+		
+			nextFrameTick += framelenTarget * perfFreq;
 			framelenMeasured = (double)(now - lastFrameTick) / (double)perfFreq;
 			framerateMeasured = 1 / framelenMeasured;
 			lastFrameTick = now;
+			
 			display->clear ();
 			display->activateScreenDrawMode ();
-			/*
-			if (curStage) {
-				curStage->drawBg ();
-				spriteMan->draw ();
-				curStage->drawFg ();
-			}
-			*/
 			drawMan->draw ();
 			display->present ();
 		}
 	}
 }
 
-void Game::setFramerate (double f)
+void Game::runSynchronized ()
 {
-	framerateTarget = f;
-	framelenTarget = 1 / f;
+	Uint64 nextFrameTick, lastFrameTick, now;
+	int left;
+	
+	lastFrameTick = nextFrameTick = SDL_GetPerformanceCounter ();
+	running = true;
+	
+	while (running) {
+		
+		now = SDL_GetPerformanceCounter ();
+		if (now >= nextFrameTick) {
+
+			nextFrameTick += framelenTarget * perfFreq;
+			framelenMeasured = (double)(now - lastFrameTick) / (double)perfFreq;
+			framerateMeasured = 1 / framelenMeasured;
+			lastFrameTick = now;
+			
+			eventMan->update ();
+			updateMan->update (framelenTarget);
+			
+			display->clear ();
+			display->activateScreenDrawMode ();
+			drawMan->draw ();
+			display->present ();
+		}
+		
+		if (powerSaving) {
+			now = SDL_GetPerformanceCounter ();
+			left = ((double)(nextFrameTick - SDL_GetPerformanceCounter ()) * 1000.0
+				/ (double)perfFreq);
+			if (left > 0) {
+				SDL_Delay (left);
+			}
+		}
+	}
+}
+
+void Game::setFramerate (double fps)
+{
+	framerateTarget = fps;
+	framelenTarget = 1 / fps;
 }
 
 void Game::enterStage (Stage *stage)

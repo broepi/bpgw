@@ -20,12 +20,15 @@ class Game : public EventHandler
 {
 public:
 	bool running;
+	bool synchronized;
 	bool powerSaving;
 	Uint64 perfFreq;
+	
 	double framerateTarget; // frames per second
 	double framelenTarget; // seconds per frame
 	double framerateMeasured; // frames per second
 	double framelenMeasured; // seconds per frame
+	
 	FT_Library freeType;
 	EventManager *eventMan;
 	Display *display;
@@ -39,7 +42,8 @@ public:
 	~Game ();
 	void run ();
 	void runPerformance ();
-	void setFramerate (double f);
+	void runSynchronized ();
+	void setFramerate (double fps);
 	void enterStage (Stage *stage);
 	void leaveStage ();
 	void changeStage (Stage *stage);
